@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local application data and uploaded files
+secureguard.db
+instance/
+uploads/
+
+# Test and tooling output
+.pytest_cache/
+.coverage
+htmlcov/

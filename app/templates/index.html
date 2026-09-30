@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecureGuard | DevSecOps Training Lab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home"><span class="brand-mark">S</span> Secure<span>Guard</span></a>
+    <nav aria-label="Primary navigation">
+      <a href="#lab">Security Lab</a>
+      <a href="#tools">Pipeline</a>
+      <a href="#access">Access</a>
+    </nav>
+    <span class="environment"><i></i> TRAINING ENVIRONMENT</span>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">DEVSECOPS LEARNING PLATFORM</p>
+        <h1>Build fast.<br><em>Secure</em> faster.</h1>
+        <p class="lead">A hands-on vulnerable application for learning SAST, SCA, Docker security, and CI/CD security gates.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#lab">Explore the lab <span>→</span></a>
+          <a class="button ghost" href="#tools">View pipeline</a>
+        </div>
+      </div>
+      <div class="hero-panel" aria-label="Application security status">
+        <div class="panel-head"><span>SECURITY POSTURE</span><span class="pulse">LIVE</span></div>
+        <div class="score"><span>42</span><small>/ 100</small><p>Risk score</p></div>
+        <div class="meter"><b></b></div>
+        <div class="findings"><div><strong>06</strong><span>Known findings</span></div><div><strong>04</strong><span>Security tools</span></div><div><strong>01</strong><span>Demo app</span></div></div>
+      </div>
+    </section>
+
+    <section class="section" id="lab">
+      <div class="section-heading"><div><p class="eyebrow">INTERACTIVE SECURITY LAB</p><h2>Explore the attack surface</h2></div><p>Each area intentionally demonstrates a common web-application security risk. Use this only in your local training environment.</p></div>
+      <div class="lab-grid">
+        <article class="lab-card accent-red"><div class="card-icon">⌘</div><h3>Authentication</h3><p>Register a user or test the login endpoint.</p><button data-panel="auth">Open access panel <span>→</span></button></article>
+        <article class="lab-card accent-orange"><div class="card-icon">◈</div><h3>User data API</h3><p>Inspect a deliberately exposed user-data endpoint.</p><button data-request="/api/users">Inspect API <span>→</span></button></article>
+        <article class="lab-card accent-purple"><div class="card-icon">⬆</div><h3>File upload</h3><p>Test unsafe file-upload handling in a controlled lab.</p><button data-panel="upload">Upload a file <span>→</span></button></article>
+        <article class="lab-card accent-blue"><div class="card-icon">⚙</div><h3>Admin access</h3><p>Explore a broken access-control example.</p><button data-request="/admin?role=admin">Open admin demo <span>→</span></button></article>
+      </div>
+    </section>
+
+    <section class="pipeline section" id="tools">
+      <div><p class="eyebrow">SECURITY AUTOMATION</p><h2>Your DevSecOps pipeline</h2><p>Use these stages in GitHub Actions to turn security checks into repeatable delivery gates.</p></div>
+      <ol><li><b>01</b><div><strong>Code quality</strong><span>Run pytest</span></div></li><li><b>02</b><div><strong>SAST</strong><span>Scan code with Bandit / Semgrep</span></div></li><li><b>03</b><div><strong>SCA</strong><span>Audit dependencies</span></div></li><li><b>04</b><div><strong>Container scan</strong><span>Scan Docker image with Trivy</span></div></li></ol>
+    </section>
+
+    <section class="access section" id="access">
+      <p class="eyebrow">TRAINING ACCESS</p><h2>Try the application endpoints</h2>
+      <p>Use the panels below locally. Results are displayed here so you do not need to navigate away from the dashboard.</p>
+      <div class="action-row"><button class="button primary" data-panel="auth">Register or log in</button><button class="button ghost" data-panel="upload">Upload test file</button></div>
+      <div class="workspace hidden" id="workspace"></div>
+    </section>
+  </main>
+  <footer><span>SECUREGUARD</span><p>Educational DevSecOps project · Local use only</p><p>Built for B.Tech Cyber Security</p></footer>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
