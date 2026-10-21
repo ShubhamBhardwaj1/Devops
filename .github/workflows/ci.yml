@@ -39,7 +39,7 @@ jobs:
         id: semgrep
         if: ${{ success() }}
         continue-on-error: true
-        run: semgrep scan --config security/semgrep-rules.yml --error
+        run: semgrep scan --config security/semgrep-rules.yml --json --output semgrep-results.json --error
 
       - name: Run Gitleaks secret detection
         id: gitleaks
@@ -51,12 +51,54 @@ jobs:
           GITLEAKS_CONFIG: .gitleaks.toml
           GITLEAKS_ENABLE_COMMENTS: "false"
 
+      - name: Run pip-audit dependency scan
+        id: pip_audit
+        if: ${{ always() }}
+        continue-on-error: true
+        run: |
+          python -m pip install pip-audit
+          python -m pip_audit -r requirements.txt --format json --output pip-audit-results.json
+
+      - name: Build SecureGuard Docker image
+        id: docker_build
+        if: ${{ always() }}
+        run: docker build --tag secureguard:${{ github.sha }} .
+
+      - name: Run Trivy container scan
+        id: trivy
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: secureguard:${{ github.sha }}
+          format: json
+          output: trivy-results.json
+          severity: CRITICAL,HIGH,MEDIUM,LOW
+          vuln-type: os,library
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Enforce Trivy severity policy
+        id: trivy_policy
+        if: ${{ always() }}
+        continue-on-error: true
+        run: python scripts/enforce_trivy_policy.py
+
+      - name: Write security report
+        if: ${{ always() }}
+        env:
+          GITLEAKS_OUTCOME: ${{ steps.gitleaks.outcome }}
+        run: python scripts/write_security_summary.py
+
       - name: Enforce security gate
         if: ${{ always() }}
         run: |
           echo "Semgrep outcome: ${{ steps.semgrep.outcome }}"
           echo "Gitleaks outcome: ${{ steps.gitleaks.outcome }}"
-          if [ "${{ steps.semgrep.outcome }}" != "success" ] || [ "${{ steps.gitleaks.outcome }}" != "success" ]; then
+          echo "pip-audit outcome: ${{ steps.pip_audit.outcome }}"
+          echo "Trivy outcome: ${{ steps.trivy.outcome }}"
+          echo "Trivy policy outcome: ${{ steps.trivy_policy.outcome }}"
+          if [ "${{ steps.semgrep.outcome }}" != "success" ] || [ "${{ steps.gitleaks.outcome }}" != "success" ] || [ "${{ steps.pip_audit.outcome }}" != "success" ] || [ "${{ steps.trivy.outcome }}" != "success" ] || [ "${{ steps.trivy_policy.outcome }}" != "success" ]; then
             echo "Security gate failed: remediation is required."
             exit 1
           fi
