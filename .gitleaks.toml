@@ -1,0 +1,7 @@
+title = "SecureGuard training secret-detection rules"
+
+[[rules]]
+id = "secureguard-training-api-key"
+description = "Detect the intentionally fake API key used for CI training"
+regex = '''TEST_API_KEY\s*=\s*["']fake-example-key["']'''
+secretGroup = 0

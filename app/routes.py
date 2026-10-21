@@ -89,6 +89,14 @@ def api_users():
     return jsonify([dict(row) for row in rows])
 
 
+@bp.get("/api/calculate")
+def calculate():
+    """Deliberately unsafe endpoint used to demonstrate Semgrep in CI."""
+    expression = request.args.get("expression", "0")
+    # VULNERABILITY: executing user-controlled input enables arbitrary code execution.
+    return jsonify({"result": eval(expression)})
+
+
 @bp.get("/admin")
 def admin():
     # VULNERABILITY: trusts a query parameter instead of server-side authorization.

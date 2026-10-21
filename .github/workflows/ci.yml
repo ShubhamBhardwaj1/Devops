@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v6
+        with:
+          # Gitleaks scans commits, so it needs repository history.
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -25,3 +28,35 @@ jobs:
 
       - name: Run tests
         run: python -m pytest -q
+
+      # This scanner intentionally finds the eval() training vulnerability.
+      # We keep scanning so Gitleaks also runs, then fail the final security gate.
+      - name: Install Semgrep
+        if: ${{ success() }}
+        run: python -m pip install semgrep
+
+      - name: Run Semgrep SAST
+        id: semgrep
+        if: ${{ success() }}
+        continue-on-error: true
+        run: semgrep scan --config security/semgrep-rules.yml --error
+
+      - name: Run Gitleaks secret detection
+        id: gitleaks
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_ENABLE_COMMENTS: "false"
+
+      - name: Enforce security gate
+        if: ${{ always() }}
+        run: |
+          echo "Semgrep outcome: ${{ steps.semgrep.outcome }}"
+          echo "Gitleaks outcome: ${{ steps.gitleaks.outcome }}"
+          if [ "${{ steps.semgrep.outcome }}" != "success" ] || [ "${{ steps.gitleaks.outcome }}" != "success" ]; then
+            echo "Security gate failed: remediation is required."
+            exit 1
+          fi

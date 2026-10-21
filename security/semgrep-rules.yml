@@ -1,0 +1,9 @@
+rules:
+  - id: secureguard-insecure-eval
+    languages: [python]
+    severity: ERROR
+    message: "Do not evaluate untrusted input. Use an allowlisted parser instead."
+    metadata:
+      category: security
+      technology: [flask, python]
+    pattern: eval(...)
