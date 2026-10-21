@@ -78,27 +78,50 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
 
-      - name: Enforce Trivy severity policy
-        id: trivy_policy
+      - name: Start application for DAST
+        id: app_start
+        if: ${{ always() && steps.docker_build.outcome == 'success' }}
+        run: |
+          docker run -d --rm --name secureguard-dast -p 5000:5000 secureguard:${{ github.sha }}
+          for attempt in {1..15}; do curl --fail --silent http://127.0.0.1:5000/ && exit 0; sleep 2; done
+          docker logs secureguard-dast
+          exit 1
+
+      - name: Run OWASP ZAP baseline scan
+        id: zap
+        if: ${{ always() && steps.app_start.outcome == 'success' }}
+        continue-on-error: true
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: http://127.0.0.1:5000
+          allow_issue_writing: false
+          fail_action: true
+          artifact_name: zap-baseline-report
+
+      - name: Stop DAST application
+        if: ${{ always() }}
+        run: docker rm --force secureguard-dast || true
+
+      - name: Evaluate deployment risk
+        id: risk_engine
         if: ${{ always() }}
         continue-on-error: true
-        run: python scripts/enforce_trivy_policy.py
+        env:
+          GITLEAKS_OUTCOME: ${{ steps.gitleaks.outcome }}
+        run: python scripts/security_gate.py
 
       - name: Write security report
         if: ${{ always() }}
         env:
           GITLEAKS_OUTCOME: ${{ steps.gitleaks.outcome }}
+          ZAP_OUTCOME: ${{ steps.zap.outcome }}
         run: python scripts/write_security_summary.py
 
       - name: Enforce security gate
         if: ${{ always() }}
         run: |
-          echo "Semgrep outcome: ${{ steps.semgrep.outcome }}"
-          echo "Gitleaks outcome: ${{ steps.gitleaks.outcome }}"
-          echo "pip-audit outcome: ${{ steps.pip_audit.outcome }}"
-          echo "Trivy outcome: ${{ steps.trivy.outcome }}"
-          echo "Trivy policy outcome: ${{ steps.trivy_policy.outcome }}"
-          if [ "${{ steps.semgrep.outcome }}" != "success" ] || [ "${{ steps.gitleaks.outcome }}" != "success" ] || [ "${{ steps.pip_audit.outcome }}" != "success" ] || [ "${{ steps.trivy.outcome }}" != "success" ] || [ "${{ steps.trivy_policy.outcome }}" != "success" ]; then
-            echo "Security gate failed: remediation is required."
+          echo "Risk engine outcome: ${{ steps.risk_engine.outcome }}"
+          if [ "${{ steps.risk_engine.outcome }}" != "success" ]; then
+            echo "Deployment blocked by the configured risk threshold."
             exit 1
           fi

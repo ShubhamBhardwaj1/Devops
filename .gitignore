@@ -13,3 +13,9 @@ uploads/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Locally generated security scan reports
+security-gate.json
+semgrep-results.json
+pip-audit-results.json
+trivy-results.json

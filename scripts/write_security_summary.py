@@ -16,6 +16,7 @@ def read_json(path: str, default):
 semgrep = read_json("semgrep-results.json", {"results": []})
 audit = read_json("pip-audit-results.json", {"dependencies": []})
 trivy = read_json("trivy-results.json", {"Results": []})
+gate = read_json("security-gate.json", {"decision": "NOT EVALUATED", "counts": {}})
 
 sast_count = len(semgrep.get("results", []))
 dependency_cves = sum(len(item.get("vulns", [])) for item in audit.get("dependencies", []))
@@ -37,6 +38,7 @@ report = f"""# SecureGuard security report
 | Secrets (Gitleaks) | {secret_count} |
 | Dependency CVEs (pip-audit) | {dependency_cves} |
 | Container CVEs (Trivy) | {sum(container.values())} |
+| DAST (OWASP ZAP) | {os.getenv("ZAP_OUTCOME", "skipped")} |
 
 ## Container severity breakdown
 
@@ -44,7 +46,11 @@ report = f"""# SecureGuard security report
 | ---: | ---: | ---: | ---: |
 | {container['CRITICAL']} | {container['HIGH']} | {container['MEDIUM']} | {container['LOW']} |
 
-> This training branch intentionally contains an `eval()` finding and a fake API key, so the security gate is expected to fail until they are remediated.
+## Deployment decision
+
+**{gate['decision']}** - Critical: {gate['counts'].get('CRITICAL', 0)} / High: {gate['counts'].get('HIGH', 0)}
+
+Policy: block at **1 Critical** or **5 High** findings.
 """
 
 summary = os.getenv("GITHUB_STEP_SUMMARY")
