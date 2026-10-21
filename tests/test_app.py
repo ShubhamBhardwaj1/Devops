@@ -41,3 +41,9 @@ def test_registration_and_login(client):
 def test_unknown_profile_is_not_found(client):
     response = client.get("/profile/no-such-user")
     assert response.status_code == 404
+
+
+def test_dashboard_api_labels_training_data(client):
+    response = client.get("/api/dashboard")
+    assert response.status_code == 200
+    assert response.get_json()["runtime"]["response"] == "SIMULATED"

@@ -36,6 +36,16 @@
       </div>
     </section>
 
+    <section class="dashboard section" id="dashboard">
+      <div class="section-heading"><div><p class="eyebrow">OPERATIONS OVERVIEW</p><h2>Security command center</h2></div><p id="dashboard-mode">Loading the local training snapshot…</p></div>
+      <div class="metric-grid">
+        <article><span class="metric-label">PIPELINE</span><strong id="pipeline-status">—</strong><small><b id="build-count">0</b> builds · <b id="failed-count">0</b> failed</small></article>
+        <article><span class="metric-label">SECURITY FINDINGS</span><strong><b id="critical-count">0</b> critical</strong><small><b id="high-count">0</b> high · <b id="medium-count">0</b> medium · <b id="low-count">0</b> low</small></article>
+        <article><span class="metric-label">RUNTIME RESPONSE</span><strong id="runtime-response">—</strong><small><b id="alert-count">0</b> alerts · <b id="blocked-count">0</b> isolated</small></article>
+      </div>
+      <div class="event-panel"><div class="event-panel-head"><h3>Recent security events</h3><span id="dashboard-updated">—</span></div><div id="event-list" class="event-list"><p>Loading events…</p></div></div>
+    </section>
+
     <section class="section" id="lab">
       <div class="section-heading"><div><p class="eyebrow">INTERACTIVE SECURITY LAB</p><h2>Explore the attack surface</h2></div><p>Each area intentionally demonstrates a common web-application security risk. Use this only in your local training environment.</p></div>
       <div class="lab-grid">

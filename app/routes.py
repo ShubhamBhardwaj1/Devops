@@ -11,6 +11,7 @@ import sqlite3
 from flask import Blueprint, current_app, jsonify, render_template, request, session
 
 from .database import get_db
+from .dashboard import dashboard_snapshot
 
 bp = Blueprint("main", __name__)
 
@@ -18,6 +19,12 @@ bp = Blueprint("main", __name__)
 @bp.get("/")
 def index():
     return render_template("index.html")
+
+
+@bp.get("/api/dashboard")
+def dashboard_api():
+    """Expose the local training dashboard snapshot to the browser UI."""
+    return jsonify(dashboard_snapshot())
 
 
 @bp.post("/register")

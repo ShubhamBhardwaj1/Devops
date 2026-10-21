@@ -10,6 +10,7 @@ import re
 import subprocess
 
 from .threat_engine import RuntimeEvent, classify
+from .response import plan_response
 
 SAFE_CONTAINER_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 EXPECTED_PROCESSES = {"python", "python3", "flask", "gunicorn"}
@@ -40,7 +41,8 @@ def main() -> None:
     parser.add_argument("--container", required=True, help="Docker container name or ID")
     args = parser.parse_args()
     alerts = classify(collect_process_events(args.container))
-    print(json.dumps([alert.__dict__ for alert in alerts], indent=2))
+    output = [{"alert": alert.__dict__, "response": plan_response(alert).__dict__} for alert in alerts]
+    print(json.dumps(output, indent=2))
 
 
 if __name__ == "__main__":
